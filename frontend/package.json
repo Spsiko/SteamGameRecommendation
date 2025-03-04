@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Aiden Ross <rossam06@pfw.edu>, Jude Lieb <liebja02@pfw.edu, Sean Sikora <sikosp02@pfw.edu>",
   "license": "ISC",
   "description": "",
   "dependencies": {
