@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- This file is partly based on AI code generation -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Game Recommender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script defer src="script.js"></script>
+</head>
+<body class="bg-dark text-white">
+    <div class="container mt-4">
+        <div class="row justify-content-center g-4">
+            
+            <div class="col-md-4">
+                <h1 class="text-center">Steam Game Selection</h1>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="gameInput" placeholder="Search for a game">
+                    <button type="button" class="btn btn-primary" onclick="searchSteamGame()">Search</button>
+                </div>
+                <h4>Results</h4>
+                <ul id="results" class="list-group overflow-auto" style="max-height: 500px;"></ul>
+            </div>
+
+            <div class="col-md-4 text-center">
+                <h1>Game Information</h1>
+                <img id="icon" class="img-fluid rounded" src="/images/blank.png" alt="Game Icon">
+                <p id="gameTitle" class="fw-bold mt-2"></p>
+                <p id="description"></p>
+            </div>
+
+            <div class="col-md-4">
+                <h1 class="text-center">Recommender</h1>
+                <h4>Steam Profile Link</h4>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="profileInput" placeholder="Enter Profile URL">
+                </div>
+                <button type="button" class="btn btn-primary w-100" onclick="getRecommendation()">Generate Suggestions</button>
+                <h4 class="mt-3">Results</h4>
+                <ul id="games" class="list-group overflow-auto" style="max-height: 250px;"></ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
