@@ -42,5 +42,36 @@ async function displayDetails(appid) {
 }
 
 async function getRecommendation() {
+    //I want to get the user's profile URL and then send it to the server
+    //To get back their library and then get a recommendation
+    const profileURL = document.getElementById("profileInput").value;
+    console.log("Profile URL: ", profileURL);
+    const urlParts = profileURL.split('/');
+    const vanityURL = urlParts[urlParts.length - 2]; // Extract the vanity URL from the profile URL
+    console.log("Vanity URL: ", vanityURL);
 
+    // Resolve the vanity URL to a Steam ID
+    const resolveResponse = await fetch(`/resolveVanityURL?vanityurl=${encodeURIComponent(vanityURL)}`);
+    
+    if (!resolveResponse.ok) {
+        console.error("Error resolving vanity URL");
+        return;
+    }
+
+    const resolveData = await resolveResponse.json();
+    steamID = resolveData.response.steamid;
+    // const steamID = "76561198163428013";
+    console.log("Steam ID: ", steamID);
+
+    // Fetch the user's Steam library using the resolved Steam ID
+    const libraryResponse = await fetch(`/getSteamLibrary?steamid=${encodeURIComponent(steamID)}`);
+    
+    if (!libraryResponse.ok) {
+        console.error("Error fetching from server");
+        return;
+    }
+
+    const library = await libraryResponse.json();
+    console.log("Steam Library: ", library);
+    // Process the library data to get recommendations
 }

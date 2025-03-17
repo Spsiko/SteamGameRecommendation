@@ -2,9 +2,15 @@
 import flask
 import requests
 from flask import request, jsonify, send_from_directory
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = flask.Flask(__name__, static_folder='..//frontend//public')
-port = 3001
+port = 80
+
+STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 
 @app.route('/')
 def home():
@@ -44,6 +50,41 @@ def server_request():
     except requests.exceptions.RequestException as error:
         print(f"Error fetching from Steam: {error}")
         return jsonify({'error': 'Failed to fetch from Steam'}), 500
+
+@app.route('/getSteamLibrary', methods=['GET'])
+def get_steam_library():
+    print(f'{STEAM_API_KEY}')
+    steam_id = request.args.get('steamid')
+    if not steam_id:
+        return jsonify({'error': 'Steam ID is required'}), 400
+
+    url = f'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={STEAM_API_KEY}&steamid={steam_id}&format=json'
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return jsonify(data)
+    except requests.exceptions.RequestException as error:
+        print(f"Error fetching Steam library: {error}")
+        return jsonify({'error': 'Failed to fetch Steam library'}), 500
+
+@app.route('/resolveVanityURL', methods=['GET'])
+def resolve_vanity_url():
+    vanity_url = request.args.get('vanityurl')
+    if not vanity_url:
+        return jsonify({'error': 'Vanity URL is required'}), 400
+
+    url = f'http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={STEAM_API_KEY}&vanityurl={vanity_url}'
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        return jsonify(data)
+    except requests.exceptions.RequestException as error:
+        print(f"Error resolving vanity URL: {error}")
+        return jsonify({'error': 'Failed to resolve vanity URL'}), 500
 
 if __name__ == '__main__':
     app.run(port=port)
