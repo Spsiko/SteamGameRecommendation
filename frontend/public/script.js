@@ -90,5 +90,10 @@ async function getRecommendation() {
 
     const library = await libraryResponse.json();
     console.log("Steam Library: ", library);
+
+    //Checking for empty object if a private profile is used
+    if (Object.keys(library.response).length === 0) { 
+        alert("Steam profile must be public to allow access")
+    }
     // Process the library data to get recommendations
 }
