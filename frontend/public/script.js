@@ -44,26 +44,43 @@ async function displayDetails(appid) {
 async function getRecommendation() {
     //I want to get the user's profile URL and then send it to the server
     //To get back their library and then get a recommendation
-    const profileURL = document.getElementById("profileInput").value;
+    profileURL = document.getElementById("profileInput").value;
     console.log("Profile URL: ", profileURL);
+
+    //We want to check if the last character is a back slash and if so get rid of it
+    if (profileURL[profileURL.length - 1] === '/') {
+        profileURL = profileURL.slice(0, -1);
+    }
+
+
+
     const urlParts = profileURL.split('/');
-    const vanityURL = urlParts[urlParts.length - 2]; // Extract the vanity URL from the profile URL
+    const vanityURL = urlParts[urlParts.length - 1]; // Extract the vanity URL from the profile URL
     console.log("Vanity URL: ", vanityURL);
 
     // Resolve the vanity URL to a Steam ID
-    const resolveResponse = await fetch(`/resolveVanityURL?vanityurl=${encodeURIComponent(vanityURL)}`);
-    
-    if (!resolveResponse.ok) {
-        console.error("Error resolving vanity URL");
-        return;
+    // check if vanityURL is a number
+
+    if (!isNaN(vanityURL)) {
+        steamID = vanityURL;
+    }
+    else
+    {
+        const resolveResponse = await fetch(`/resolveVanityURL?vanityurl=${encodeURIComponent(vanityURL)}`);
+        
+        if (!resolveResponse.ok) {
+            console.error("Error resolving vanity URL");
+            return;
+        }
+
+        const resolveData = await resolveResponse.json();
+        steamID = resolveData.response.steamid;
     }
 
-    const resolveData = await resolveResponse.json();
-    steamID = resolveData.response.steamid;
-    // const steamID = "76561198163428013";
     console.log("Steam ID: ", steamID);
 
     // Fetch the user's Steam library using the resolved Steam ID
+    //TODO: Add error handling for when the user has a private profile
     const libraryResponse = await fetch(`/getSteamLibrary?steamid=${encodeURIComponent(steamID)}`);
     
     if (!libraryResponse.ok) {
