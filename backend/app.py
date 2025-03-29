@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = flask.Flask(__name__, static_folder='..//frontend//public')
-port = 80
+app = flask.Flask(__name__, static_folder='..//frontend')
+port = 3000
 
 STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 
