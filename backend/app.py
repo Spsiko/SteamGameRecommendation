@@ -1,9 +1,10 @@
-#padts of this code was made by use of AI AI
+#parts of this code were made by use of AI
 import flask
 import requests
 from flask import request, jsonify, send_from_directory
 import os
 from dotenv import load_dotenv
+import testModel
 
 load_dotenv()
 
@@ -85,6 +86,23 @@ def resolve_vanity_url():
     except requests.exceptions.RequestException as error:
         print(f"Error resolving vanity URL: {error}")
         return jsonify({'error': 'Failed to resolve vanity URL'}), 500
+    
+    
+    
+@app.route('/getRecommendations', methods=['POST'])
+def get_recommendations():
+    try:
+        data = request.get_json()
+       
+        # Placeholder recommendation logic
+        # Calls the model and gives it the app ids
+        recommended_games = testModel.generate_recommendations(data)
+
+        return jsonify(recommended_games)
+
+    except Exception as e:
+        print("Error processing recommendations:", str(e))
+        return jsonify({"error": "Flask server error"}), 500
 
 if __name__ == '__main__':
     app.run(port=port)
