@@ -1,7 +1,13 @@
-#This function would go in the model file or preprocessing file later on
 def generate_recommendations(data):
     print(data)
+
+    # Placeholder games with their appid and name
+    all_games = [
+        {"name": "Game A", "appid": 12345},
+        {"name": "Game B", "appid": 23456},
+        {"name": "Game C", "appid": 34567},
+        {"name": "Game D", "appid": 45678},
+        {"name": "Game E", "appid": 56789}
+    ]
     
-    #returning placeholders
-    all_games = ["Game A", "Game B", "Game C", "Game D", "Game E"]
     return all_games

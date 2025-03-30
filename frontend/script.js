@@ -15,8 +15,8 @@ async function searchSteamGame() {
 
     const games = await response.json();
     console.log("Search Results: ", games)
-    const resultsList = document.getElementById("results");
-    resultsList.innerHTML = ""
+    const searchResults = document.getElementById("searchResults");
+    searchResults.innerHTML = ""
 
     games.forEach(game => {
         selectedID = game.appid
@@ -24,7 +24,7 @@ async function searchSteamGame() {
         li.innerHTML = `<img src="${game.icon}" alt="ico"> ${game.name}`
         li.classList.add("list-group-item", "list-group-item-action")
         li.onclick = () => displayDetails(game.appid);
-        resultsList.appendChild(li);
+        searchResults.appendChild(li);
     });
 }
 
@@ -39,6 +39,11 @@ async function displayDetails(appid) {
 
     const info = await response.json();
     console.log("Game Info", info)
+
+    if(info[appid].data === undefined ) {
+        console.log("Error: game information not found")
+        return
+    }
 
     document.getElementById("icon").src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
     data = info[appid].data
@@ -128,13 +133,14 @@ async function getModelOutput(library) {
         console.log("Recommendations: ", recommendations);
 
         // Display recommendations in the UI
-        const gamesList = document.getElementById("games");
+        const gamesList = document.getElementById("gamesList");
         gamesList.innerHTML = ""; // Clear previous results
 
         recommendations.forEach(game => {
-            const li = document.createElement("li");
-            li.classList.add("list-group-item", "bg-dark", "text-white");
-            li.textContent = game;
+            const li = document.createElement("li")
+            li.classList.add("list-group-item", "list-group-item-action")
+            li.onclick = () => displayDetails(game.appid);
+            li.textContent = game.name;
             gamesList.appendChild(li);
         });
 

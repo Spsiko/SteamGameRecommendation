@@ -19,13 +19,11 @@
                     <button type="button" class="btn btn-primary" onclick="searchSteamGame()">Search</button>
                 </div>
                 <h4>Results</h4>
-                <ul id="results" class="list-group overflow-auto" style="max-height: 500px;"></ul>
+                <ul id="searchResults" class="list-group overflow-auto" style="max-height: 500px;"></ul>
             </div>
 
             <div class="col-md-4 text-center">
-                <h1>Selected Games</h1>
-                <ul id="selectedGames" class="list-group overflow-auto" style="max-height: 200px;"></ul>
-                <h4>Game Information</h4>
+                <h1>Game Information</h1>
                 <img id="icon" class="img-fluid rounded" src="/images/blank.png" alt="Game Icon">
                 <p id="gameTitle" class="fw-bold mt-2"></p>
                 <p id="description"></p>
@@ -41,7 +39,7 @@
                 <button type="button" class="btn btn-primary w-100" onclick="recommendSingle()">Use Selected Game</button>
 
                 <h4 class="mt-3">Results</h4>
-                <ul id="games" class="list-group overflow-auto" style="max-height: 250px;"></ul>
+                <ul id="gamesList" class="list-group overflow-auto" style="max-height: 250px;"></ul>
             </div>
         </div>
     </div>
