@@ -1,5 +1,9 @@
 //This file is based in part on AI code generation
 
+//The appid of the game currently selected from the search
+let selectedID = ""
+
+//Keyword search of steam, find individual games
 async function searchSteamGame() {
     const gameName = document.getElementById("gameInput").value;
     const response = await fetch(`/serverRequest?type=search&game=${encodeURIComponent(gameName)}`);
@@ -15,6 +19,7 @@ async function searchSteamGame() {
     resultsList.innerHTML = ""
 
     games.forEach(game => {
+        selectedID = game.appid
         const li = document.createElement("li")
         li.innerHTML = `<img src="${game.icon}" alt="ico"> ${game.name}`
         li.classList.add("list-group-item", "list-group-item-action")
@@ -23,6 +28,7 @@ async function searchSteamGame() {
     });
 }
 
+//Get a description and an image for the selected game
 async function displayDetails(appid) {
     const response = await fetch(`/serverRequest?type=game&appid=${encodeURIComponent(appid)}`);
     
@@ -41,9 +47,16 @@ async function displayDetails(appid) {
     document.getElementById("gameTitle").innerHTML = `<p><b>${data.name}</b></p>`
 }
 
+//Sends the selected game to be used as model input
+async function recommendSingle(appid) {
+    getModelOutput({response: {game_count: 1, games: [{"appid":appid,"playtime_deck_forever":0,
+        "playtime_disconnected":0,"playtime_forever":0,"playtime_linux_forever":0,
+        "playtime_mac_forever":0,"playtime_windows_forever":0,"rtime_last_played":0}]}})
+}
+
+//Get the user's profile URL and then send it to the server
+//Then get their library and  obtain a recommendation
 async function getRecommendation() {
-    //I want to get the user's profile URL and then send it to the server
-    //To get back their library and then get a recommendation
     profileURL = document.getElementById("profileInput").value;
     console.log("Profile URL: ", profileURL);
 
@@ -83,7 +96,11 @@ async function getRecommendation() {
 
     const library = await libraryResponse.json();
     console.log("Steam Library: ", library);
+    getModelOutput(library)
+}
 
+//Sending one or more games to the model for predictions
+async function getModelOutput(library) {
     const bodyData = { games: library.response.games };
     console.log("Sending to Flask:", JSON.stringify(bodyData));
 
