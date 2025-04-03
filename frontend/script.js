@@ -1,5 +1,9 @@
 //This file is based in part on AI code generation
 
+//The appid of the game currently selected from the search
+let selectedID = ""
+
+//Keyword search of steam, find individual games
 async function searchSteamGame() {
     const gameName = document.getElementById("gameInput").value;
     const response = await fetch(`/serverRequest?type=search&game=${encodeURIComponent(gameName)}`);
@@ -11,18 +15,20 @@ async function searchSteamGame() {
 
     const games = await response.json();
     console.log("Search Results: ", games)
-    const resultsList = document.getElementById("results");
-    resultsList.innerHTML = ""
+    const searchResults = document.getElementById("searchResults");
+    searchResults.innerHTML = ""
 
     games.forEach(game => {
+        selectedID = game.appid
         const li = document.createElement("li")
         li.innerHTML = `<img src="${game.icon}" alt="ico"> ${game.name}`
         li.classList.add("list-group-item", "list-group-item-action")
         li.onclick = () => displayDetails(game.appid);
-        resultsList.appendChild(li);
+        searchResults.appendChild(li);
     });
 }
 
+//Get a description and an image for the selected game
 async function displayDetails(appid) {
     const response = await fetch(`/serverRequest?type=game&appid=${encodeURIComponent(appid)}`);
     
@@ -34,6 +40,11 @@ async function displayDetails(appid) {
     const info = await response.json();
     console.log("Game Info", info)
 
+    if(info[appid].data === undefined ) {
+        console.log("Error: game information not found")
+        return
+    }
+
     document.getElementById("icon").src = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
     data = info[appid].data
 
@@ -41,9 +52,16 @@ async function displayDetails(appid) {
     document.getElementById("gameTitle").innerHTML = `<p><b>${data.name}</b></p>`
 }
 
+//Sends the selected game to be used as model input
+async function recommendSingle(appid) {
+    getModelOutput({response: {game_count: 1, games: [{"appid":appid,"playtime_deck_forever":0,
+        "playtime_disconnected":0,"playtime_forever":0,"playtime_linux_forever":0,
+        "playtime_mac_forever":0,"playtime_windows_forever":0,"rtime_last_played":0}]}})
+}
+
+//Get the user's profile URL and then send it to the server
+//Then get their library and  obtain a recommendation
 async function getRecommendation() {
-    //I want to get the user's profile URL and then send it to the server
-    //To get back their library and then get a recommendation
     profileURL = document.getElementById("profileInput").value;
     console.log("Profile URL: ", profileURL);
 
@@ -52,20 +70,14 @@ async function getRecommendation() {
         profileURL = profileURL.slice(0, -1);
     }
 
-
-
     const urlParts = profileURL.split('/');
     const vanityURL = urlParts[urlParts.length - 1]; // Extract the vanity URL from the profile URL
     console.log("Vanity URL: ", vanityURL);
 
     // Resolve the vanity URL to a Steam ID
-    // check if vanityURL is a number
-
-    if (!isNaN(vanityURL)) {
+    if (!isNaN(vanityURL)) {  // check if vanityURL is a number
         steamID = vanityURL;
-    }
-    else
-    {
+    } else{
         const resolveResponse = await fetch(`/resolveVanityURL?vanityurl=${encodeURIComponent(vanityURL)}`);
         
         if (!resolveResponse.ok) {
@@ -80,7 +92,6 @@ async function getRecommendation() {
     console.log("Steam ID: ", steamID);
 
     // Fetch the user's Steam library using the resolved Steam ID
-    //TODO: Add error handling for when the user has a private profile
     const libraryResponse = await fetch(`/getSteamLibrary?steamid=${encodeURIComponent(steamID)}`);
     
     if (!libraryResponse.ok) {
@@ -90,10 +101,50 @@ async function getRecommendation() {
 
     const library = await libraryResponse.json();
     console.log("Steam Library: ", library);
+    getModelOutput(library)
+}
+
+//Sending one or more games to the model for predictions
+async function getModelOutput(library) {
+    const bodyData = { games: library.response.games };
+    console.log("Sending to Flask:", JSON.stringify(bodyData));
 
     //Checking for empty object if a private profile is used
     if (Object.keys(library.response).length === 0) { 
         alert("Steam profile must be public to allow access")
     }
     // Process the library data to get recommendations
+
+    try {
+        const recommendationResponse = await fetch('/getRecommendations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(JSON.stringify(bodyData))
+        });
+
+        if (!recommendationResponse.ok) {
+            console.error("Error fetching recommendations");
+            return;
+        }
+
+        const recommendations = await recommendationResponse.json();
+        console.log("Recommendations: ", recommendations);
+
+        // Display recommendations in the UI
+        const gamesList = document.getElementById("gamesList");
+        gamesList.innerHTML = ""; // Clear previous results
+
+        recommendations.forEach(game => {
+            const li = document.createElement("li")
+            li.classList.add("list-group-item", "list-group-item-action")
+            li.onclick = () => displayDetails(game.appid);
+            li.textContent = game.name;
+            gamesList.appendChild(li);
+        });
+
+    } catch (error) {
+        console.error("Error sending data to Flask:", error);
+    }
 }
