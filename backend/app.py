@@ -2,6 +2,7 @@
 import flask
 import requests
 from flask import request, jsonify, send_from_directory
+from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 import testModel
@@ -9,6 +10,7 @@ import testModel
 load_dotenv()
 
 app = flask.Flask(__name__, static_folder='..//frontend')
+CORS(app)  # Enable CORS for all routes
 port = 3000
 
 STEAM_API_KEY = os.getenv('STEAM_API_KEY')
@@ -87,12 +89,12 @@ def resolve_vanity_url():
         print(f"Error resolving vanity URL: {error}")
         return jsonify({'error': 'Failed to resolve vanity URL'}), 500
     
-    
-    
 @app.route('/getRecommendations', methods=['POST'])
 def get_recommendations():
     try:
         data = request.get_json()
+        if isinstance(data, str):
+            data = json.loads(data)
        
         # Placeholder recommendation logic
         # Calls the model and gives it the app ids
@@ -105,4 +107,4 @@ def get_recommendations():
         return jsonify({"error": "Flask server error"}), 500
 
 if __name__ == '__main__':
-    app.run(port=port)
+    app.run(host='0.0.0.0', port=port)
