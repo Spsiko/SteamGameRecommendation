@@ -42,3 +42,11 @@ def generate_recommendations(data):
         )
     else:
         raise ValueError("Input data must contain either 'game_id' or 'user_games'")
+
+
+from steamgamerecommendationmodel import SteamGameRecommender
+
+recommender = SteamGameRecommender('backend/SteamGameDataset/games.csv')
+recommender.initialize()
+
+print("Initialization complete!")

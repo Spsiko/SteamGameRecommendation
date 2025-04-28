@@ -5,7 +5,8 @@ from flask import request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-import testModel
+import json
+import nfcModel
 
 load_dotenv()
 
@@ -93,18 +94,19 @@ def resolve_vanity_url():
 def get_recommendations():
     try:
         data = request.get_json()
-        if isinstance(data, str):
-            data = json.loads(data)
-       
-        # Placeholder recommendation logic
-        # Calls the model and gives it the app ids
-        recommended_games = testModel.generate_recommendations(data)
 
-        return jsonify(recommended_games)
+        # Expecting {"games": [list of AppIDs]}
+        user_games = data.get('games')
+        if not user_games:
+            return jsonify({"error": "Missing 'games' field in request"}), 400
+
+        recommendations = nfcModel.recommend_based_on_games(user_games)
+        return jsonify({"recommended_games": recommendations})
 
     except Exception as e:
-        print("Error processing recommendations:", str(e))
-        return jsonify({"error": "Flask server error"}), 500
+        print(f"Error processing recommendations: {str(e)}")
+        return jsonify({'error': 'Server error during recommendation'}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=port)
+    print("Starting Flask server...")
+    app.run(host='127.0.0.1', port=port)

@@ -106,14 +106,10 @@ async function getRecommendation() {
 
 //Sending one or more games to the model for predictions
 async function getModelOutput(library) {
-    const bodyData = { games: library.response.games };
-    console.log("Sending to Flask:", JSON.stringify(bodyData));
+    console.log("Sending library to Flask:", library);
 
-    //Checking for empty object if a private profile is used
-    if (Object.keys(library.response).length === 0) { 
-        alert("Steam profile must be public to allow access")
-    }
-    // Process the library data to get recommendations
+    // Extract list of AppIDs from library
+    const userGames = library.response.games.map(game => game.appid);
 
     try {
         const recommendationResponse = await fetch('/getRecommendations', {
@@ -121,7 +117,9 @@ async function getModelOutput(library) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(JSON.stringify(bodyData))
+            body: JSON.stringify({
+                games: userGames
+            })
         });
 
         if (!recommendationResponse.ok) {
@@ -129,18 +127,18 @@ async function getModelOutput(library) {
             return;
         }
 
-        const recommendations = await recommendationResponse.json();
-        console.log("Recommendations: ", recommendations);
+        const responseJson = await recommendationResponse.json();
+        console.log("Recommendations: ", responseJson);
 
-        // Display recommendations in the UI
+        const recommendedAppIDs = responseJson.recommended_games;
+
         const gamesList = document.getElementById("gamesList");
-        gamesList.innerHTML = ""; // Clear previous results
+        gamesList.innerHTML = "";
 
-        recommendations.forEach(game => {
-            const li = document.createElement("li")
-            li.classList.add("list-group-item", "list-group-item-action")
-            li.onclick = () => displayDetails(game.appid);
-            li.textContent = game.name;
+        recommendedAppIDs.forEach(appid => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "list-group-item-action");
+            li.textContent = "AppID: " + appid;
             gamesList.appendChild(li);
         });
 
@@ -148,3 +146,4 @@ async function getModelOutput(library) {
         console.error("Error sending data to Flask:", error);
     }
 }
+
