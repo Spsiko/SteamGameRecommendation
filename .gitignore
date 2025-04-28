@@ -5,3 +5,4 @@ __pycache__
 .env
 .venv
 .backend/test_recommender.py
+backend/SteamGameDataset/games.csv
