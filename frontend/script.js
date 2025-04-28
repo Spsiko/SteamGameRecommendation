@@ -54,9 +54,49 @@ async function displayDetails(appid) {
 
 //Sends the selected game to be used as model input
 async function recommendSingle(appid) {
-    getModelOutput({response: {game_count: 1, games: [{"appid":appid,"playtime_deck_forever":0,
-        "playtime_disconnected":0,"playtime_forever":0,"playtime_linux_forever":0,
-        "playtime_mac_forever":0,"playtime_windows_forever":0,"rtime_last_played":0}]}})
+    try {
+        const recommendationResponse = await fetch('/getRecommendations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                games: [appid]
+            })
+        });
+
+        if (!recommendationResponse.ok) {
+            console.error("Error fetching recommendations");
+            return;
+        }
+
+        const responseJson = await recommendationResponse.json();
+        console.log("Single Game Recommendations: ", responseJson);
+
+        const recommendedGames = responseJson.recommended_games;
+
+        recommendedGames.forEach(game => {
+            const li = document.createElement("li");
+            li.classList.add("list-group-item", "list-group-item-action");
+        
+            const link = document.createElement("a");
+            link.href = `https://store.steampowered.com/app/${game.appid}`;
+            link.target = "_blank";
+            link.textContent = game.name;
+        
+            const appidSpan = document.createElement("small");
+            appidSpan.classList.add("text-muted");
+            appidSpan.style.marginLeft = "10px";
+            appidSpan.textContent = `(AppID: ${game.appid})`;
+        
+            li.appendChild(link);
+            li.appendChild(appidSpan);
+            gamesList.appendChild(li);
+        });
+
+    } catch (error) {
+        console.error("Error sending data to Flask:", error);
+    }
 }
 
 //Get the user's profile URL and then send it to the server
@@ -135,12 +175,27 @@ async function getModelOutput(library) {
         const gamesList = document.getElementById("gamesList");
         gamesList.innerHTML = "";
 
-        recommendedAppIDs.forEach(appid => {
+        recommendedAppIDs.forEach(game => {
             const li = document.createElement("li");
             li.classList.add("list-group-item", "list-group-item-action");
-            li.textContent = "AppID: " + appid;
+        
+            // Create a clickable Steam link
+            const link = document.createElement("a");
+            link.href = `https://store.steampowered.com/app/${game.appid}`;
+            link.target = "_blank"; // Open link in new tab
+            link.textContent = game.name;
+        
+            // Optionally add AppID small next to it
+            const appidSpan = document.createElement("small");
+            appidSpan.classList.add("text-muted");
+            appidSpan.style.marginLeft = "10px";
+            appidSpan.textContent = `(AppID: ${game.appid})`;
+        
+            li.appendChild(link);
+            li.appendChild(appidSpan);
             gamesList.appendChild(li);
         });
+        
 
     } catch (error) {
         console.error("Error sending data to Flask:", error);
